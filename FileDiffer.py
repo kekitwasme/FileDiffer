@@ -78,4 +78,4 @@ def Diff(fileName1, fileName2):
             lineNumber += 1
             modPosition = 0
 
-    return result
+    return result.toJson()
