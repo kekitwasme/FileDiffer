@@ -5,12 +5,12 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    diff = fd.Diff(r"test\file1.txt", r"test\file2.txt")
-    return json.loads(diff)
+    return redirect(url_for('example'))
 
 @app.route('/example')
 def example():
-    return "an example"
+    jsonDiff = json.loads(fd.Diff(r"test\file1.txt", r"test\file2.txt"))
+    return jsonDiff
 
 if __name__ == '__main__':
     app.run(debug = True)
