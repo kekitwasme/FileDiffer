@@ -2,6 +2,7 @@ from asyncio.windows_events import NULL
 import json
 import difflib
 from unittest.util import _MAX_LENGTH
+import os
 
 class Added:
     def __init__(self, value, atPosition):
@@ -47,8 +48,9 @@ def Diff(fileName1, fileName2):
     d = difflib.Differ()
 
     # open files for reading
-    f1 = open(fileName1, "r")
-    f2 = open(fileName2, "r")
+    cwd = os.getcwd()
+    f1 = open(cwd + fileName1, "r")
+    f2 = open(cwd + fileName2, "r")
 
     # read and split files by line
     t1 = f1.read().split("\n")

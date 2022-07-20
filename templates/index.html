@@ -1,13 +1,101 @@
-﻿<!DOCTYPE html>
+﻿<html>
 
-{% extends 'base.html'%}
+<head>
+    <title>
+        index
+    </title>
 
-{% block title %}
-Index
-{% endblock %}
+    <style>
+        mark.blue {
+            background-color: palegreen;
+        }
+
+        mark.pink {
+            background-color: pink;
+        }
+    </style>
+</head>
+
+<body>
+
+    <p id="result">{{result}}</p>
+
+    <script type="text/javascript">
+
+        let result = document.getElementById("result");
+        let innerHTML = result.innerHTML;
+
+        //make json object from diff result
+        let lines = JSON.parse(innerHTML).lines;
+
+        //clear innerHTML
+        result.innerHTML = "";
+
+        //for each line
+        for (let i = 0; i < lines.length; i++) {
+
+            let line = lines[i];
+            let text = "";
+
+            if (line.added.length > 0 || line.deleted.length > 0) {
+
+                text = processLine(line);
+
+            } else text = line.text;
+
+            result.innerHTML += line.lineNumber + " " + text + "<br>";
+        }
+
+        //process the imported line for highlighting
+        function processLine(line) {
+
+            let added = line.added;
+            let deleted = line.deleted;
+            var lineText = line.text.split("");
 
 
-{% block content %}
-<h1>Index</h1>
-<h4>{{result}}</h4>
-{% endblock %}
+            if (added.length > 0) {
+
+                highlight(lineText, added, "added");
+            }
+
+            if (deleted.length > 0) {
+
+                highlight(lineText, deleted, "deleted");
+            }
+
+            lineText = lineText.join("");
+            lineText = lineText.toString();
+
+            console.log(lineText);
+            return lineText;
+        }
+
+        //highlight modified characters
+        function highlight(lineText, modList, modType) {
+
+            for (let i = 0; i < modList.length; i++) {
+
+                let value = modList[i].value;
+                let index = modList[i].atPosition;
+
+                let marked = "";
+
+                //decide color
+                switch (modType) {
+                    case "added":
+                        marked = "<mark class='blue'>" + value + "</mark>"; break;
+                    case "deleted":
+                        marked = "<mark class='pink'>" + value + "</mark>"; break;
+                    default:
+                        break;
+                }
+
+                lineText[index] = marked;
+            }
+        }
+
+    </script>
+</body>
+
+</html>
