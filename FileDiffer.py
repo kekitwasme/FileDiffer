@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 import json
 import difflib
 from unittest.util import _MAX_LENGTH
