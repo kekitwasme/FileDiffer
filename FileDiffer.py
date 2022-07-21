@@ -47,9 +47,8 @@ def Diff(fileName1, fileName2):
     d = difflib.Differ()
 
     # open files for reading
-    cwd = os.getcwd()
-    f1 = open(cwd + fileName1, "r")
-    f2 = open(cwd + fileName2, "r")
+    f1 = open(fileName1, "r")
+    f2 = open(fileName2, "r")
 
     # read and split files by line
     t1 = f1.read().split("\n")
