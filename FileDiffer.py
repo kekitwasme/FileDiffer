@@ -3,6 +3,8 @@ import difflib
 from unittest.util import _MAX_LENGTH
 import os
 
+
+#Class initialiation
 class Added:
     def __init__(self, value, atPosition):
         self.value = value
@@ -41,6 +43,7 @@ class DiffResult:
             sort_keys=True, indent=4)
         
 
+#Diff Implementation
 
 def Diff(fileName1, fileName2):
 
