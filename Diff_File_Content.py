@@ -1,6 +1,7 @@
 import difflib
 from pprint import pprint
 import os
+import filecmp
 
 def get_all_files(directory):
     """
@@ -27,18 +28,24 @@ def compare_directories(dir1, dir2):
     removed = dir1_files_adjusted - dir2_files_adjusted
     common = dir1_files_adjusted & dir2_files_adjusted
 
-    return added, removed, common
+    modified = set()
+    for file in common:
+        if not filecmp.cmp(os.path.join(dir1, file), os.path.join(dir2, file), shallow=False):
+            modified.add(file)
+    unchanged = common - modified
+
+    return added, removed, unchanged, modified
 
 def file_diff(test1_file, test2_file):
 
     # Generate a unified diff
     diff = difflib.unified_diff(test1_file, test2_file, n=1000000)
 
-    """
+
     #discarding initial information
     for i in range(0,4):
         next(diff)
-    """
+    
     #Count each line independantly
     file1_line_count = 0
     file2_line_count = 0
@@ -48,7 +55,7 @@ def file_diff(test1_file, test2_file):
         {
             "Old_Line": (file1_line_count:= file1_line_count + 1) if  value[0] == " " else (file1_line_count:= file1_line_count + 1) if value[0] == "-" else 0,
             "New_Line": (file2_line_count:= file2_line_count + 1) if  value[0] == " " else (file2_line_count:= file2_line_count + 1) if value[0] == "+" else 0,
-            "Line_Status": "unchanged" if value[0]== " " else "removed" if value[0] == "-" else "new",
+            "Line_Status": "unchanged" if value[0]== " " else "removed" if value[0] == "-" else "added",
             "Line_Value": value[1:]
             }
     for value in diff]
@@ -58,17 +65,62 @@ def file_diff(test1_file, test2_file):
 dir1 = 'test/test_old'
 dir2 = 'test/test_new'
 
-added, removed, common = compare_directories(dir1, dir2)
+added, removed, unchanged, modified = compare_directories(dir1, dir2)
 
 
 folder_diff = {}
 
-for file in common:
+for file in modified:
     with open(os.path.join(dir1, file), 'r') as file1, open(os.path.join(dir2, file), 'r') as file2:
         file1_lines = file1.readlines()
         file2_lines = file2.readlines()
-        folder_diff[file] = file_diff(file1_lines, file2_lines)
+        folder_diff[file] = {"File_State": "modified", "File_Content": file_diff(file1_lines, file2_lines)}
               
-              
+
+for file in removed:
+    with open(os.path.join(dir1, file), 'r') as file1:
+
+        folder_diff[file] = {
+            "File_State": "removed",
+            "File_Content": [
+            {
+                "Line_Old": count+1,
+                "Line_New": 0,
+                "Line_Status": "removed",
+                "Line_Value": lines
+            }
+        for count, lines in enumerate(file1.readlines())]
+        }
+ 
+for file in added:
+    with open(os.path.join(dir2, file), 'r') as file2:
+
+        folder_diff[file] = {
+            "File_State": "added",
+            "File_Content": [
+            {
+                "Line_Old": 0,
+                "Line_New": count+1,
+                "Line_Status": "added",
+                "Line_Value": lines
+            }
+        for count, lines in enumerate(file2.readlines())]
+        }
+
+for file in unchanged:
+    with open(os.path.join(dir2, file), 'r') as file2:
+
+        folder_diff[file] = {
+            "File_State": "unchanged",
+            "File_Content": [
+            {
+                "Line_Old": count+1,
+                "Line_New": count+1,
+                "Line_Status": "unchanged",
+                "Line_Value": lines
+            }
+        for count, lines in enumerate(file2.readlines())]
+        }
+
 pprint(folder_diff)
 
