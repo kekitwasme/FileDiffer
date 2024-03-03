@@ -1,71 +1,13 @@
-﻿<!DOCTYPE html>
+﻿<!-- Changes to utilsed server.js to 'dynamically' load content -->
+
+<!DOCTYPE html>
 <html>
 <head>
-    <title>
-        index
-    </title>
-
-    <style>
-        table, td, th {
-            border: 1px solid;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        mark.green {
-            background-color: palegreen;
-        }
-
-        mark.pink {
-            background-color: pink;
-        }
-    </style>
+    <title>Dynamic Content Example</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='js/server.js') }}" defer></script>
 </head>
-
 <body>
-
-    <p id="result">{{result}}</p>
-
-    <script type="text/javascript">
-
-        let result = document.getElementById("result");
-        let innerHTML = result.innerHTML;
-
-        //make json object from diff result
-        let folders = JSON.parse(innerHTML);
-
-        //clear innerHTML
-        result.innerHTML = "";
-
-        //for each line
-        for(const [fileName, fileDetails] of Object.entries(folders)){
-
-            result.innerHTML += "<table>"
-            result.innerHTML += "<th>" + fileName + "</th><br>"
-
-            for (let i = 0; i <fileDetails.File_Content.length; i++){
-
-
-                let line = fileDetails.File_Content[i].Line_Value;
-
-                //highlighting modified lines 
-                if (fileDetails.File_Content[i].Line_Status == "added") {
-                    result.innerHTML += "<mark class='green'>" + line + "</mark><br>"
-                } else if (fileDetails.File_Content[i].Line_Status == "removed"){
-                    result.innerHTML += "<mark class='pink'>" + line + "</mark><br>"
-                } else {
-                    result.innerHTML += line + "<br>";
-                }          
-            }
-            result.innerHTML += "<br>"
-            result.innerHTML += "</table>"
-
-        }
-
-    </script>
+    <div id="result"></div>
 </body>
-
 </html>
