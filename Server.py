@@ -1,19 +1,21 @@
 from flask import *
-import FileDiffer as fd
-from pathlib import Path
+import Diff_File_Content as fd
 
-HERE = Path('.')
 
 app = Flask(__name__)
 
+dir_old = 'test/test_old'
+dir_new = 'test/test_new'
+
+
 @app.route('/')
 def index():
-    a = fd.Diff(HERE / 'test' / 'file1.txt', HERE / 'test' / 'file2.txt')
+    a = fd.create_folder_diff(dir_old, dir_new)
     return render_template('index.html', result=a)
 
 @app.route('/example')
 def example():
-    jsonDiff = json.loads(fd.Diff(HERE / 'test' / 'file1.txt', HERE / 'test' / 'file2.txt'))
+    jsonDiff = json.loads(fd.create_folder_diff(dir_old, dir_new))
     return jsonDiff
 
 if __name__ == '__main__':

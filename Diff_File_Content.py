@@ -1,8 +1,16 @@
+"""
+Create the file structure for the diff between the folders
+
+Todo:
+Consider files that are to be ignored by the gif
+Integrate changable context for the diff
+    Regex to find @@ .. @@ ?
+"""
+
 import difflib
-from pprint import pprint
 import os
 import filecmp
-
+import json 
 
 def get_all_files(directory):
     """
@@ -17,7 +25,7 @@ def get_all_files(directory):
 
 def compare_directories(dir_old, dir_new):
     """
-    Compare two directories to find files that are added, removed, or modified.
+    Compare two directories to find files that are added, removed, common and modified.
     """
     dir_old_files = set(get_all_files(dir_old))
     dir_new_files = set(get_all_files(dir_new))
@@ -32,7 +40,7 @@ def compare_directories(dir_old, dir_new):
 
     modified = set()
     for file in common:
-        if not filecmp.cmp(os.path.join(dir_old_, file), os.path.join(dir_new, file), shallow=False):
+        if not filecmp.cmp(os.path.join(dir_old, file), os.path.join(dir_new, file), shallow=False):
             modified.add(file)
     unchanged = common - modified
 
@@ -67,70 +75,67 @@ def file_diff(test1_file, test2_file):
     return structure
 
 
-#To be change to input
-dir_old = 'test/test_old'
-dir_new = 'test/test_new'
+def create_folder_diff(dir_old, dir_new):
 
-added, removed, unchanged, modified = compare_directories(dir_old, dir_new)
+    added, removed, unchanged, modified = compare_directories(dir_old, dir_new)
 
+    folder_diff = {}
 
-folder_diff = {}
+    for file in modified:
+        with open(os.path.join(dir_old, file), 'r') as file1, open(os.path.join(dir_new, file), 'r') as file2:
+            file1_lines = file1.readlines()
+            file2_lines = file2.readlines()
+            folder_diff[file] = {"File_State": "modified", "File_Content": file_diff(file1_lines, file2_lines)}
+                
 
+    for file in removed:
+        with open(os.path.join(dir_old, file), 'r') as file1:
 
-for file in modified:
-    with open(os.path.join(dir_old, file), 'r') as file1, open(os.path.join(dir_new, file), 'r') as file2:
-        file1_lines = file1.readlines()
-        file2_lines = file2.readlines()
-        folder_diff[file] = {"File_State": "modified", "File_Content": file_diff(file1_lines, file2_lines)}
-              
-
-for file in removed:
-    with open(os.path.join(dir_old, file), 'r') as file1:
-
-        folder_diff[file] = {
-            "File_State": "removed",
-            "File_Content": [
-            {
-                "Line_Old": count+1,
-                "Line_New": 0,
-                "Line_Status": "removed",
-                "Line_Value": lines
+            folder_diff[file] = {
+                "File_State": "removed",
+                "File_Content": [
+                {
+                    "Line_Old": count+1,
+                    "Line_New": 0,
+                    "Line_Status": "removed",
+                    "Line_Value": lines
+                }
+            for count, lines in enumerate(file1.readlines())]
             }
-        for count, lines in enumerate(file1.readlines())]
-        }
 
 
-for file in added:
-    with open(os.path.join(dir_new, file), 'r') as file2:
+    for file in added:
+        with open(os.path.join(dir_new, file), 'r') as file2:
 
-        folder_diff[file] = {
-            "File_State": "added",
-            "File_Content": [
-            {
-                "Line_Old": 0,
-                "Line_New": count+1,
-                "Line_Status": "added",
-                "Line_Value": lines
+            folder_diff[file] = {
+                "File_State": "added",
+                "File_Content": [
+                {
+                    "Line_Old": 0,
+                    "Line_New": count+1,
+                    "Line_Status": "added",
+                    "Line_Value": lines
+                }
+            for count, lines in enumerate(file2.readlines())]
             }
-        for count, lines in enumerate(file2.readlines())]
+
+
+    for file in unchanged:
+        with open(os.path.join(dir_new, file), 'r') as file2:
+
+            folder_diff[file] = {
+                "File_State": "unchanged",
+                "File_Content": [
+                {
+                    "Line_Old": count+1,
+                    "Line_New": count+1,
+                    "Line_Status": "unchanged",
+                    "Line_Value": lines
+                }
+            for count, lines in enumerate(file2.readlines())]
         }
+    
+    return json.dumps(folder_diff, default=lambda o: o.__dict__, 
+                sort_keys=True, indent=4)
 
-
-for file in unchanged:
-    with open(os.path.join(dir_new, file), 'r') as file2:
-
-        folder_diff[file] = {
-            "File_State": "unchanged",
-            "File_Content": [
-            {
-                "Line_Old": count+1,
-                "Line_New": count+1,
-                "Line_Status": "unchanged",
-                "Line_Value": lines
-            }
-        for count, lines in enumerate(file2.readlines())]
-        }
-
-
-pprint(folder_diff)
 

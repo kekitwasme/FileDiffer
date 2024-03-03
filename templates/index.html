@@ -1,12 +1,21 @@
-﻿<html>
-
+﻿<!DOCTYPE html>
+<html>
 <head>
     <title>
         index
     </title>
 
     <style>
-        mark.blue {
+        table, td, th {
+            border: 1px solid;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        mark.green {
             background-color: palegreen;
         }
 
@@ -26,73 +35,34 @@
         let innerHTML = result.innerHTML;
 
         //make json object from diff result
-        let lines = JSON.parse(innerHTML).lines;
+        let folders = JSON.parse(innerHTML);
 
         //clear innerHTML
         result.innerHTML = "";
 
         //for each line
-        for (let i = 0; i < lines.length; i++) {
+        for(const [fileName, fileDetails] of Object.entries(folders)){
 
-            let line = lines[i];
-            let text = "";
+            result.innerHTML += "<table>"
+            result.innerHTML += "<th>" + fileName + "</th><br>"
 
-            if (line.added.length > 0 || line.deleted.length > 0) {
-
-                text = processLine(line);
-
-            } else text = line.text;
-
-            result.innerHTML += line.lineNumber + " " + text + "<br>";
-        }
-
-        //process the imported line for highlighting
-        function processLine(line) {
-
-            let added = line.added;
-            let deleted = line.deleted;
-            var lineText = line.text.split("");
+            for (let i = 0; i <fileDetails.File_Content.length; i++){
 
 
-            if (added.length > 0) {
+                let line = fileDetails.File_Content[i].Line_Value;
 
-                highlight(lineText, added, "added");
+                //highlighting modified lines 
+                if (fileDetails.File_Content[i].Line_Status == "added") {
+                    result.innerHTML += "<mark class='green'>" + line + "</mark><br>"
+                } else if (fileDetails.File_Content[i].Line_Status == "removed"){
+                    result.innerHTML += "<mark class='pink'>" + line + "</mark><br>"
+                } else {
+                    result.innerHTML += line + "<br>";
+                }          
             }
+            result.innerHTML += "<br>"
+            result.innerHTML += "</table>"
 
-            if (deleted.length > 0) {
-
-                highlight(lineText, deleted, "deleted");
-            }
-
-            lineText = lineText.join("");
-            lineText = lineText.toString();
-
-            console.log(lineText);
-            return lineText;
-        }
-
-        //highlight modified characters
-        function highlight(lineText, modList, modType) {
-
-            for (let i = 0; i < modList.length; i++) {
-
-                let value = modList[i].value;
-                let index = modList[i].atPosition;
-
-                let marked = "";
-
-                //decide color
-                switch (modType) {
-                    case "added":
-                        marked = "<mark class='blue'>" + value + "</mark>"; break;
-                    case "deleted":
-                        marked = "<mark class='pink'>" + value + "</mark>"; break;
-                    default:
-                        break;
-                }
-
-                lineText[index] = marked;
-            }
         }
 
     </script>
