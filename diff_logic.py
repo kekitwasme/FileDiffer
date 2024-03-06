@@ -65,9 +65,9 @@ def file_diff(test1_file, test2_file):
 
     structure = [
         {
-            "Old_Line": (file1_line_count:= file1_line_count + 1) if  value[0] == " " else (file1_line_count:= file1_line_count + 1) if value[0] == "-" else 0,
-            "New_Line": (file2_line_count:= file2_line_count + 1) if  value[0] == " " else (file2_line_count:= file2_line_count + 1) if value[0] == "+" else 0,
-            "Line_Status": "unchanged" if value[0]== " " else "removed" if value[0] == "-" else "added",
+            "Line_Old": (file1_line_count:= file1_line_count + 1) if  value[0] == " " else (file1_line_count:= file1_line_count + 1) if value[0] == "-" else "",
+            "Line_New": (file2_line_count:= file2_line_count + 1) if  value[0] == " " else (file2_line_count:= file2_line_count + 1) if value[0] == "+" else "",
+            "Line_Status": "" if value[0]== " " else "-" if value[0] == "-" else "+",
             "Line_Value": value[1:]
             }
     for value in diff]
@@ -96,8 +96,8 @@ def create_folder_diff(dir_old, dir_new):
                 "File_Content": [
                 {
                     "Line_Old": count+1,
-                    "Line_New": 0,
-                    "Line_Status": "removed",
+                    "Line_New": "",
+                    "Line_Status": "-",
                     "Line_Value": lines
                 }
             for count, lines in enumerate(file1.readlines())]
@@ -111,9 +111,9 @@ def create_folder_diff(dir_old, dir_new):
                 "File_State": "added",
                 "File_Content": [
                 {
-                    "Line_Old": 0,
+                    "Line_Old": "",
                     "Line_New": count+1,
-                    "Line_Status": "added",
+                    "Line_Status": "+",
                     "Line_Value": lines
                 }
             for count, lines in enumerate(file2.readlines())]
@@ -129,7 +129,7 @@ def create_folder_diff(dir_old, dir_new):
                 {
                     "Line_Old": count+1,
                     "Line_New": count+1,
-                    "Line_Status": "unchanged",
+                    "Line_Status": "",
                     "Line_Value": lines
                 }
             for count, lines in enumerate(file2.readlines())]

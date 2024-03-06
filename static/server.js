@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
     // Fetch the JSON data from the Flask server
-    fetch('/example')
+    fetch('/raw')
     .then(response => response.json())
     .then(data => {
         const resultContainer = document.getElementById("result");
@@ -14,23 +14,31 @@ document.addEventListener("DOMContentLoaded", function() {
             const table = document.createElement('table');
             const headerRow = table.insertRow();
             const headerCell = headerRow.insertCell();
-            headerCell.colSpan = "2";
-            headerCell.innerHTML = fileName;
+            headerCell.colSpan = "4";
+            headerCell.innerHTML = fileName.concat(" -- ", fileDetails.File_State);
 
             // Add file content to the table
             fileDetails.File_Content.forEach(lineDetail => {
                 const row = table.insertRow();
-                const cell = row.insertCell();
 
-                // Apply styling based on the line status
-                let line = lineDetail.Line_Value;
-                if (lineDetail.Line_Status === "added") {
-                    cell.innerHTML = `<mark class='green'>${line}</mark>`;
-                } else if (lineDetail.Line_Status === "removed") {
-                    cell.innerHTML = `<mark class='pink'>${line}</mark>`;
-                } else {
-                    cell.textContent = line;
+                if (lineDetail.Line_Status === "+") {
+                    row.className = 'green-highlight'; // Use a class to style the row
+                } else if (lineDetail.Line_Status === "-") {
+                    row.className = 'pink-highlight'; // Use a class to style the row
                 }
+
+                const cellOldLine = row.insertCell();
+                cellOldLine.textContent = lineDetail.Line_Old;
+
+                const cellNewLine = row.insertCell();
+                cellNewLine.textContent = lineDetail.Line_New;
+
+                const cellChange = row.insertCell();
+                cellChange.textContent = lineDetail.Line_Status;
+
+                const cellValue = row.insertCell();
+                cellValue.textContent = lineDetail.Line_Value;
+
             });
 
             // Append the table to the result container

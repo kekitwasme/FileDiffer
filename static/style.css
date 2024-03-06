@@ -1,0 +1,28 @@
+/* style.css */
+table, th, td {
+    border: 1px solid black;
+}
+
+table {
+    width: 65%;
+    margin-left: auto;
+    margin-right: auto;
+    border-collapse: collapse;
+}
+
+td {
+    padding: 4px;
+}
+
+td:first-child, td:nth-child(2), td:nth-child(3){
+    width: 30px;
+    text-align: center;
+}
+
+.green-highlight {
+    background-color: lightgreen;
+}
+
+.pink-highlight {
+    background-color: lightpink;
+}
