@@ -134,6 +134,8 @@ def create_folder_diff(dir_old, dir_new):
                 }
             for count, lines in enumerate(file2.readlines())]
         }
+            
+    # print(folder_diff)
     
     return json.dumps(folder_diff, default=lambda o: o.__dict__, 
                 sort_keys=True, indent=4)
