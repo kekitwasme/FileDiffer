@@ -12,6 +12,7 @@ import os
 import filecmp
 import json 
 
+
 def get_all_files(directory):
     """
     Get all file paths in the given directory and its subdirectories.
