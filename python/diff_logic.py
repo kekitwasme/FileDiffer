@@ -79,3 +79,10 @@ class GenerateDiff:
     def _get_default_branch(self):
         # Return the HEAD as a symbolic reference to the default branch
         return self.repo.head.shorthand
+
+def main(*args):
+    git_dir = args[0].decode()
+    diff_target = args[1].decode()
+    diff_source = args[2].decode() if len(args) > 2 else None
+    diff_result = GenerateDiff(".").output_merge_diff_json(diff_target, diff_source)
+    return diff_result
