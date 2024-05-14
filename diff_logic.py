@@ -1,142 +1,81 @@
-"""
-Create the file structure for the diff between the folders
+import json
+from pygit2 import Repository, discover_repository
 
-Todo:
-Consider files that are to be ignored by the gif
-Integrate changable context for the diff
-    Regex to find @@ .. @@ ?
-"""
-
-import difflib
-import os
-import filecmp
-import json 
-
-
-def get_all_files(directory):
+class GenerateDiff:
     """
-    Get all file paths in the given directory and its subdirectories.
+    Handles the generation of diffs for merges (and commits)
+    Requires the compared directories to be repos.
     """
-    file_paths = []
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            file_paths.append(os.path.join(root, file))
-    return file_paths
+    def __init__(self, repo_path):
+        self.repo_path = discover_repository(repo_path)
+        if self.repo_path is None:
+            raise ValueError("Repository not found at provided path")
+        self.repo = Repository(self.repo_path)
+        self.diff_data = {}
 
+    def output_merge_diff_json(self, target_branch, source_branch=None):
+        self._merge_diff(target_branch, source_branch)
+        return json.dumps(self.diff_data, indent=4)
 
-def compare_directories(dir_old, dir_new):
-    """
-    Compare two directories to find files that are added, removed, common and modified.
-    """
-    dir_old_files = set(get_all_files(dir_old))
-    dir_new_files = set(get_all_files(dir_new))
+    def output_commit_diff_json(self, source_commit, target_commit):
+        pass
 
-    # Adjust file paths to make them comparable
-    dir_old_files_adjusted = {os.path.relpath(path, dir_old) for path in dir_old_files}
-    dir_new_files_adjusted = {os.path.relpath(path, dir_new) for path in dir_new_files}
+    def _merge_diff(self, target_branch, source_branch=None):
+        """
+        Compares diff between merges. Compares the diff between the branch and the 
+        common ancestor of both branches 
+        """
+        if source_branch is None:
+            source_branch = self._get_default_branch()
+        
+        #Find common ancestor. Need to address scenario where files are similar but not forked 
+        source_commit = self.repo.revparse_single(source_branch)
+        target_commit = self.repo.revparse_single(target_branch)
+        base_commit = self.repo.merge_base(source_commit.id, target_commit.id)
+        base_commit_obj = self.repo.get(base_commit)
 
-    added = dir_new_files_adjusted - dir_old_files_adjusted
-    removed = dir_old_files_adjusted - dir_new_files_adjusted
-    common = dir_old_files_adjusted & dir_new_files_adjusted
-
-    modified = set()
-    for file in common:
-        if not filecmp.cmp(os.path.join(dir_old, file), os.path.join(dir_new, file), shallow=False):
-            modified.add(file)
-    unchanged = common - modified
-
-    return added, removed, unchanged, modified
-
-
-def file_diff(test1_file, test2_file):
-    """
-    Generate diff between two files, returning diff in a structure
-    """
-
-    diff = difflib.unified_diff(test1_file, test2_file, n=1000000)
-
-    #Discard positional information (@@)
-    for i in range(0,4):
-        next(diff)
-    
-
-    file1_line_count = 0
-    file2_line_count = 0
-
-
-    structure = [
-        {
-            "Line_Old": (file1_line_count:= file1_line_count + 1) if  value[0] == " " else (file1_line_count:= file1_line_count + 1) if value[0] == "-" else "",
-            "Line_New": (file2_line_count:= file2_line_count + 1) if  value[0] == " " else (file2_line_count:= file2_line_count + 1) if value[0] == "+" else "",
-            "Line_Status": "" if value[0]== " " else "-" if value[0] == "-" else "+",
-            "Line_Value": value[1:]
+        diff = self.repo.diff(base_commit_obj, source_commit)
+        
+        self.diff_data = {
+            "source_branch": source_branch,
+            "target_branch": target_branch,
+            "base_commit_id": str(base_commit),
+            "diff_summary": {
+                "total_files_changed": diff.stats.files_changed,
+                "total_insertions": diff.stats.insertions,
+                "total_deletions": diff.stats.deletions
             }
-    for value in diff]
-
-    return structure
-
-
-def create_folder_diff(dir_old, dir_new):
-
-    added, removed, unchanged, modified = compare_directories(dir_old, dir_new)
-
-    folder_diff = {}
-
-    for file in modified:
-        with open(os.path.join(dir_old, file), 'r') as file1, open(os.path.join(dir_new, file), 'r') as file2:
-            file1_lines = file1.readlines()
-            file2_lines = file2.readlines()
-            folder_diff[file] = {"File_State": "modified", "File_Content": file_diff(file1_lines, file2_lines)}
-                
-
-    for file in removed:
-        with open(os.path.join(dir_old, file), 'r') as file1:
-
-            folder_diff[file] = {
-                "File_State": "removed",
-                "File_Content": [
-                {
-                    "Line_Old": count+1,
-                    "Line_New": "",
-                    "Line_Status": "-",
-                    "Line_Value": lines
-                }
-            for count, lines in enumerate(file1.readlines())]
-            }
-
-
-    for file in added:
-        with open(os.path.join(dir_new, file), 'r') as file2:
-
-            folder_diff[file] = {
-                "File_State": "added",
-                "File_Content": [
-                {
-                    "Line_Old": "",
-                    "Line_New": count+1,
-                    "Line_Status": "+",
-                    "Line_Value": lines
-                }
-            for count, lines in enumerate(file2.readlines())]
-            }
-
-
-    for file in unchanged:
-        with open(os.path.join(dir_new, file), 'r') as file2:
-
-            folder_diff[file] = {
-                "File_State": "unchanged",
-                "File_Content": [
-                {
-                    "Line_Old": count+1,
-                    "Line_New": count+1,
-                    "Line_Status": "",
-                    "Line_Value": lines
-                }
-            for count, lines in enumerate(file2.readlines())]
         }
-    
-    return json.dumps(folder_diff, default=lambda o: o.__dict__, 
-                sort_keys=True, indent=4)
+        self._generate_diff_structure(diff)
 
+    def _commit_diff(self, source_commit, target_commit):
+        pass
 
+    def _generate_diff_structure(self, diff):
+        self.diff_data["changes"] = []
+        for patch in diff:
+            file_change = {
+                "file_path": patch.delta.new_file.path,
+                "added_lines": patch.line_stats[1],
+                "deleted_lines": patch.line_stats[2],
+                "hunks": []
+            }
+            for hunk in patch.hunks:
+                hunk_details = {
+                    "header": hunk.header,
+                    "lines": []
+                }
+                for line in hunk.lines:
+                    line_details = {
+                        "content": line.content.strip(),
+                        "type": line.origin,
+                        "new_lineno": line.new_lineno,
+                        "old_lineno": line.old_lineno
+                    }
+                    hunk_details["lines"].append(line_details)
+                file_change["hunks"].append(hunk_details)
+            self.diff_data["changes"].append(file_change)
+
+    def _get_default_branch(self):
+        # Return the HEAD as a symbolic reference to the default branch
+        return self.repo.head.shorthand

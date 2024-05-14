@@ -9,36 +9,37 @@ document.addEventListener("DOMContentLoaded", function() {
         resultContainer.innerHTML = "";
 
         // Process each file's details
-        Object.entries(data).forEach(([fileName, fileDetails]) => {
+        Object.entries(data.changes).forEach(([_, change]) => {
             // Create a table for each file
             const table = document.createElement('table');
             const headerRow = table.insertRow();
             const headerCell = headerRow.insertCell();
             headerCell.colSpan = "4";
-            headerCell.innerHTML = fileName.concat(" -- ", fileDetails.File_State);
-
+            headerCell.innerHTML = change.file_path;
+            
             // Add file content to the table
-            fileDetails.File_Content.forEach(lineDetail => {
-                const row = table.insertRow();
-
-                if (lineDetail.Line_Status === "+") {
-                    row.className = 'green-highlight'; // Use a class to style the row
-                } else if (lineDetail.Line_Status === "-") {
-                    row.className = 'pink-highlight'; // Use a class to style the row
-                }
-
-                const cellOldLine = row.insertCell();
-                cellOldLine.textContent = lineDetail.Line_Old;
-
-                const cellNewLine = row.insertCell();
-                cellNewLine.textContent = lineDetail.Line_New;
-
-                const cellChange = row.insertCell();
-                cellChange.textContent = lineDetail.Line_Status;
-
-                const cellValue = row.insertCell();
-                cellValue.textContent = lineDetail.Line_Value;
-
+            change.hunks.forEach(fileDetail => {
+                fileDetail.lines.forEach(lineDetail => {
+                    const row = table.insertRow();
+    
+                    if (lineDetail.type === "+") {
+                        row.className = 'green-highlight'; // Use a class to style the row
+                    } else if (lineDetail.type === "-") {
+                        row.className = 'pink-highlight'; // Use a class to style the row
+                    }
+    
+                    const cellOldLine = row.insertCell();
+                    cellOldLine.textContent = lineDetail.old_lineno;
+    
+                    const cellNewLine = row.insertCell();
+                    cellNewLine.textContent = lineDetail.new_lineno;
+    
+                    const cellChange = row.insertCell();
+                    cellChange.textContent = lineDetail.type;
+    
+                    const cellValue = row.insertCell();
+                    cellValue.textContent = lineDetail.content;
+                })
             });
 
             // Append the table to the result container

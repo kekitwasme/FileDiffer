@@ -4,12 +4,10 @@ import json
 
 app = Flask(__name__)
 
-dir_old = 'test/test_old'
-dir_new = 'test/test_new'
-
-
-diff_result = diff_logic.create_folder_diff(dir_old, dir_new)
-
+git_dir = "."
+diff_target = "HEAD^"
+diff_source = None
+diff_result = diff_logic.GenerateDiff(".").output_merge_diff_json(diff_target, diff_source)
 
 @app.route('/')
 def index():
