@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc testerebar public API
+%% @doc file_differ public API
 %% @end
 %%%-------------------------------------------------------------------
 
--module(testerebar_app).
+-module(file_differ_app).
 
 -behaviour(application).
 
