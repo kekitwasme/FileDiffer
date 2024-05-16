@@ -15,7 +15,7 @@ start(_StartType, _StartArgs) ->
     Dispatch = cowboy_router:compile([
         { '_',
           [
-            {"/", cowboy_static, {file, filename:join(RootDir, "index.html")}},
+            {"/", cowboy_static, {dir, RootDir}},
             {"/raw", hello_handler, []}
           ]
         }
