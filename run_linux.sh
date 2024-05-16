@@ -13,4 +13,5 @@ echo "Checking dependancies"
 pip install -r requirements.txt -q
 
 echo "Running server. Access with http://localhost:8080"
+rebar3 compile
 rebar3 shell
