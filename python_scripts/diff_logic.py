@@ -52,29 +52,29 @@ class GenerateDiff:
         pass
 
     def _generate_diff_structure(self, diff):
-        self.diff_data["changes"] = []
-        for patch in diff:
-            file_change = {
-                "file_path": patch.delta.new_file.path,
-                "added_lines": patch.line_stats[1],
-                "deleted_lines": patch.line_stats[2],
-                "hunks": []
-            }
-            for hunk in patch.hunks:
-                hunk_details = {
-                    "header": hunk.header,
-                    "lines": []
-                }
-                for line in hunk.lines:
-                    line_details = {
-                        "content": line.content.strip(),
-                        "type": line.origin,
-                        "new_lineno": line.new_lineno,
-                        "old_lineno": line.old_lineno
-                    }
-                    hunk_details["lines"].append(line_details)
-                file_change["hunks"].append(hunk_details)
-            self.diff_data["changes"].append(file_change)
+            self.diff_data["changes"] = [
+                {  
+                    "file_path": patch.delta.new_file.path,  
+                    "added_lines": patch.line_stats[1],  
+                    "deleted_lines": patch.line_stats[2],  
+                    "hunks": [  
+                        {  
+                            "header": hunk.header,  
+                            "lines": [  
+                                {  
+                                    "content": line.content.strip(),  
+                                    "type": line.origin,  
+                                    "new_lineno": line.new_lineno,  
+                                    "old_lineno": line.old_lineno  
+                                }  
+                                for line in hunk.lines  
+                            ]  
+                        }  
+                        for hunk in patch.hunks  
+                    ]  
+                }  
+                for patch in diff  
+            ]
 
     def _get_default_branch(self):
         # Return the HEAD as a symbolic reference to the default branch
