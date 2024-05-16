@@ -11,5 +11,6 @@ fi
 
 echo "Checking dependancies"
 pip install -r requirements.txt -q
-echo "Running Python script"
-python3 "./app.py"
+
+echo "Running server. Access with http://localhost:8080"
+rebar3 shell

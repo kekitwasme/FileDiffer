@@ -4,7 +4,7 @@
 
 init( Req, State ) ->
     {ok, P} = python:start(),
-    Diff = python:call(P, 'python.diff_logic', 'main', [<<".">>, <<"HEAD^">>]),
+    Diff = python:call(P, 'python_scripts.diff_logic', 'main', [<<".">>, <<"HEAD^">>]),
 
     Req_1 = cowboy_req:reply(
         200,
