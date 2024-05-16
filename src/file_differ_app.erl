@@ -10,8 +10,15 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
+    RootDir = filename:join([code:priv_dir(file_differ), "static"]),
+    %%io:format("Serving static files from: ~s~n", [RootDir]), % Log the directory path
     Dispatch = cowboy_router:compile([
-        { <<"localhost">>, [{<<"/">>, hello_handler, [] }] }
+        { '_',
+          [
+            {"/", cowboy_static, {file, filename:join(RootDir, "index.html")}},
+            {"/raw", hello_handler, []}
+          ]
+        }
     ]),
     {ok, _} = cowboy:start_clear(
         hello_listener,
@@ -22,5 +29,3 @@ start(_StartType, _StartArgs) ->
 
 stop(_State) ->
     ok.
-
-%% internal functions
