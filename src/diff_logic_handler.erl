@@ -1,4 +1,4 @@
--module(hello_handler).
+-module(diff_logic_handler).
 -behaviour(cowboy_handler).
 -export([init/2]).
 
