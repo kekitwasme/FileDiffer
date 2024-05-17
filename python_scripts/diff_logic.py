@@ -1,6 +1,9 @@
 import json
 from pygit2 import Repository
 
+class RevisionStringError(Exception):
+    pass
+
 def get_diff(repo_path, target_revision_string, source_revision_string=None):
     """
     Returns the diff between two revision strings of the repo found at repo_path
@@ -15,8 +18,11 @@ def get_diff(repo_path, target_revision_string, source_revision_string=None):
         source_revision_string = repo.head.shorthand
     
     # parse the rev strings to get the desired commits for the diff
-    source_commit = repo.revparse_single(source_revision_string)
-    target_commit = repo.revparse_single(target_revision_string)
+    try:
+        source_commit = repo.revparse_single(source_revision_string)
+        target_commit = repo.revparse_single(target_revision_string)
+    except KeyError as e:
+        raise RevisionStringError(f"Error in parsing revision string: {e}")
 
     # get the diff
     diff = repo.diff(target_commit, source_commit)
