@@ -6,13 +6,16 @@ ctr=$(buildah from ubuntu:24.04);
 IMG=erlang-image$IMG_SUFFIX
 
 buildah run "$ctr" -- sh -c "echo 'Australia/Perth' > /etc/timezone"
-buildah run "$ctr" -- sh -c "cat > /etc/apt/sources.list << EOF
-deb mirror://mirrors.ubuntu.com/mirrors.txt noble main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt noble-updates main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt noble-backports main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt noble-security main restricted universe multiverse
-EOF"
-buildah run "$ctr" -- rm /etc/apt/sources.list.d/ubuntu.sources
+
+# FIND FASTEST MIRROR BUT ENDED UP WITH archive.ubuntu.com ANYWAY
+#buildah run "$ctr" -- sh -c "cat > /etc/apt/sources.list << EOF
+#deb mirror://mirrors.ubuntu.com/mirrors.txt noble main restricted universe multiverse
+#deb mirror://mirrors.ubuntu.com/mirrors.txt noble-updates main restricted universe multiverse
+#deb mirror://mirrors.ubuntu.com/mirrors.txt noble-backports main restricted universe multiverse
+#deb mirror://mirrors.ubuntu.com/mirrors.txt noble-security main restricted universe multiverse
+#EOF"
+#buildah run "$ctr" -- rm /etc/apt/sources.list.d/ubuntu.sources
+
 buildah run "$ctr" -- apt update
 
 buildah run "$ctr" -- apt install --assume-yes erlang-nox rebar3 python3-venv
