@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/bash -x
 HERE=`readlink -f .`
 SUFFIX=${HERE////-} # replace / with -
 IMG_SUFFIX=${SUFFIX,,} # to lowercase
