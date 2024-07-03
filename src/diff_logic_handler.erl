@@ -3,7 +3,7 @@
 -export([init/2]).
 
 init( Req, State ) ->
-    {ok, P} = python:start(),
+    {ok, P} = python:start([{python, os:getenv("PYTHON_BIN")}]),
     
     {Status, Response} = 
         try
