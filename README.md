@@ -6,4 +6,5 @@ Run erlang server in a container using [buildah](https://buildah.io):
 git clone git@github.com:robinchew/FileDiffer_Python.git
 cd FileDiffer_Python
 ./run_container.sh
+firefox localhost:8080
 ```
