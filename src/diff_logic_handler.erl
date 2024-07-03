@@ -7,6 +7,9 @@ init( Req, State ) ->
     
     {Status, Response} = 
         try
+            % TODO
+            % Don't assume main is the default branch
+            % How do we get the current checked out branch?
             Diff = python:call(P, 'python_scripts.diff_logic', 'get_diff_json_from_args', [<<".">>, <<"HEAD^">>, <<"main">>]),
             {200, Diff}
         catch
